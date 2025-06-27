@@ -56,7 +56,7 @@ SQLite is required for the descriptor wallet:
 
 To build Bitcoin Core without wallet, see [*Disable-wallet mode*](#disable-wallet-mode)
 
-ZMQ dependencies (provides ZMQ API):
+ZMQ-enabled binaries are compiled with `-DWITH_ZMQ=ON` and require the following dependency:
 
     sudo apt-get install libzmq3-dev
 
@@ -88,6 +88,10 @@ The GUI will be able to encode addresses in QR codes unless this feature is expl
 
 Otherwise, if you don't need QR encoding support, use the `-DWITH_QRENCODE=OFF` option to disable this feature in order to compile the GUI.
 
+Support for GMP and Crypto++ is enabled by default. These libraries can
+be disabled individually with the `-DWITH_GMP=OFF` and `-DWITH_CRYPTOPP=OFF`
+configuration flags if not required.
+
 
 ### Fedora
 
@@ -107,7 +111,7 @@ SQLite is required for the descriptor wallet:
 
 To build Bitcoin Core without wallet, see [*Disable-wallet mode*](#disable-wallet-mode)
 
-ZMQ dependencies (provides ZMQ API):
+ZMQ-enabled binaries are compiled with `-DWITH_ZMQ=ON` and require the following dependency:
 
     sudo dnf install zeromq-devel
 
@@ -115,7 +119,7 @@ User-Space, Statically Defined Tracing (USDT) dependencies:
 
     sudo dnf install systemtap-sdt-devel
 
-IPC-enabled binaries are compiled  with `-DENABLE_IPC=ON` and require the following dependency.
+IPC-enabled binaries are compiled with `-DENABLE_IPC=ON` and require the following dependency.
 Skip if you do not need IPC functionality.
 
     sudo dnf install capnproto
@@ -174,4 +178,5 @@ This example lists the steps necessary to setup and build a command line only di
     cmake --build build
     ctest --test-dir build
     ./build/bin/bitcoind
+    ./build/bin/bitcoin help
 

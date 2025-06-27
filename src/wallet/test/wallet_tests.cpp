@@ -1,12 +1,12 @@
-// Copyright (c) 2012-2022 The Bitcoin Core developers
+// Copyright (c) 2012-present The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <wallet/wallet.h>
 
+#include <cstdint>
 #include <future>
 #include <memory>
-#include <stdint.h>
 #include <vector>
 
 #include <addresstype.h>
@@ -66,8 +66,7 @@ static void AddKey(CWallet& wallet, const CKey& key)
     assert(descs.size() == 1);
     auto& desc = descs.at(0);
     WalletDescriptor w_desc(std::move(desc), 0, 0, 1, 1);
-    auto spk_manager = *Assert(wallet.AddWalletDescriptor(w_desc, provider, "", false));
-    assert(spk_manager);
+    Assert(wallet.AddWalletDescriptor(w_desc, provider, "", false));
 }
 
 BOOST_FIXTURE_TEST_CASE(update_non_range_descriptor, TestingSetup)

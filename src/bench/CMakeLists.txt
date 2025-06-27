@@ -6,6 +6,8 @@ add_executable(bench_bitcoin
   bench_bitcoin.cpp
   bench.cpp
   nanobench.cpp
+)
+set_target_properties(bench_bitcoin PROPERTIES OUTPUT_NAME bench_dlog)
 # Benchmarks:
   addrman.cpp
   base58.cpp

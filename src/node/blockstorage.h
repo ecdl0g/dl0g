@@ -46,6 +46,9 @@ namespace util {
 class SignalInterrupt;
 } // namespace util
 
+//!Default rate of checking pow on index load
+static const int nDefaultCheckPoWRate = 100;
+
 namespace kernel {
 /** Access to the block database (blocks/index/) */
 class BlockTreeDB : public CDBWrapper
@@ -411,9 +414,9 @@ public:
     void UnlinkPrunedFiles(const std::set<int>& setFilesToPrune) const;
 
     /** Functions for disk access for blocks */
-    bool ReadBlock(CBlock& block, const FlatFilePos& pos) const;
+    bool ReadBlock(CBlock& block, const FlatFilePos& pos, const std::optional<uint256>& expected_hash = {}) const;
     bool ReadBlock(CBlock& block, const CBlockIndex& index) const;
-    bool ReadRawBlock(std::vector<uint8_t>& block, const FlatFilePos& pos) const;
+    bool ReadRawBlock(std::vector<std::byte>& block, const FlatFilePos& pos) const;
 
     bool ReadBlockUndo(CBlockUndo& blockundo, const CBlockIndex& index) const;
 

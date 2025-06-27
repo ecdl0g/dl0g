@@ -5,6 +5,8 @@
   "dependencies": [
     "boost-multi-index",
     "boost-signals2",
+    "cryptopp",
+    "gmp",
     "libevent"
   ],
   "default-features": [

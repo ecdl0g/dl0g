@@ -22,19 +22,31 @@ class CBlockHeader
 {
 public:
     // header
-    int32_t nVersion;
+    uint32_t nVersion;
     uint256 hashPrevBlock;
     uint256 hashMerkleRoot;
     uint32_t nTime;
-    uint32_t nBits;
-    uint32_t nNonce;
+    uint16_t nBits;
+    uint64_t nNonce;
+    uint16_t pOffset;
+    uint256 dlog_answer;
+    uint256 ECorder;
+
 
     CBlockHeader()
     {
         SetNull();
     }
 
-    SERIALIZE_METHODS(CBlockHeader, obj) { READWRITE(obj.nVersion, obj.hashPrevBlock, obj.hashMerkleRoot, obj.nTime, obj.nBits, obj.nNonce); }
+    SERIALIZE_METHODS(CBlockHeader, obj) { READWRITE(obj.nVersion, 
+        obj.hashPrevBlock,
+        obj.hashMerkleRoot,
+        obj.nTime, 
+        obj.nBits, 
+        obj.nNonce,
+        obj.pOffset,
+        obj.dlog_answer,
+        obj.ECorder); }
 
     void SetNull()
     {
@@ -44,6 +56,9 @@ public:
         nTime = 0;
         nBits = 0;
         nNonce = 0;
+        pOffset = 0;
+        dlog_answer.SetNull();
+        ECorder.SetNull();
     }
 
     bool IsNull() const
@@ -110,6 +125,9 @@ public:
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
+        block.pOffset        = pOffset;
+        block.dlog_answer    = dlog_answer;
+        block.ECorder        = ECorder;
         return block;
     }
 
@@ -156,3 +174,4 @@ struct CBlockLocator
 };
 
 #endif // BITCOIN_PRIMITIVES_BLOCK_H
+

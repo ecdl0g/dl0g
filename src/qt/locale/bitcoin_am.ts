@@ -58,11 +58,11 @@
         <translation type="unfinished">ምረጥ</translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <source>These are your DL0G addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
         <translation type="unfinished">ክፍያዎችን ለመላክ እነዚህ  የእርስዎ ቢትኮይን አድራሻዎች ናቸው። ሳንቲሞችን/ኮይኖች ከመላክዎ በፊት ሁል ጊዜ መጠኑን እና የተቀባዩን አድራሻ ያረጋግጡ።</translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
+        <source>These are your DL0G addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
 Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">እነኚህ የቢትኮይን አድራሻዎች የክፍያ መቀበያ አድራሻዎችዎ ናችው። "ተቀበል" በሚለው መደብ ውስጥ ያለውን "አዲስ የመቀበያ አድራሻ ይፍጠሩ" የሚለውን አዝራር ይጠቀሙ።
 መፈረም የሚቻለው "ሌጋሲ" በሚል ምድብ ስር በተመደቡ አድራሻዎች ብቻ ነው።</translation>
@@ -236,7 +236,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     </message>
 </context>
 <context>
-    <name>BitcoinApplication</name>
+    <name>DL0GApplication</name>
     <message>
         <source>Internal error</source>
         <translation type="unfinished">ውስጣዊ ስህተት</translation>
@@ -321,7 +321,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     </message>
 </context>
 <context>
-    <name>BitcoinGUI</name>
+    <name>DL0GGUI</name>
     <message>
         <source>&amp;Overview</source>
         <translation type="unfinished">&amp;አጠቃላይ እይታ</translation>
@@ -383,8 +383,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">&amp;የይለፍ ቃል ቀይር…</translation>
     </message>
     <message>
-        <source>Sign messages with your Bitcoin addresses to prove you own them</source>
-        <translation type="unfinished">በእርሶ የተያዙ መሆኑን ለማረጋገጥ በBitcoin አድራሻዎችዎ መልዕክቶችን ይፈርሙ</translation>
+        <source>Sign messages with your DL0G addresses to prove you own them</source>
+        <translation type="unfinished">በእርሶ የተያዙ መሆኑን ለማረጋገጥ በDL0G አድራሻዎችዎ መልዕክቶችን ይፈርሙ</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -447,11 +447,11 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">እሳድግ</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Bitcoin network.</source>
+        <source>%n active connection(s) to DL0G network.</source>
         <extracomment>A substring of the tooltip.</extracomment>
         <translation type="unfinished">
-            <numerusform>%n active connection(s) to Bitcoin network.</numerusform>
-            <numerusform>%n active connection(s) to Bitcoin network.</numerusform>
+            <numerusform>%n active connection(s) to DL0G network.</numerusform>
+            <numerusform>%n active connection(s) to DL0G network.</numerusform>
         </translation>
     </message>
     <message>
@@ -611,7 +611,7 @@ The migration process will create a backup of the wallet before migrating. This 
 <context>
     <name>Intro</name>
     <message>
-        <source>Bitcoin</source>
+        <source>DL0G</source>
         <translation type="unfinished">ቢትኮይን</translation>
     </message>
     <message numerus="yes">
@@ -718,8 +718,8 @@ The migration process will create a backup of the wallet before migrating. This 
         <translation type="unfinished">የአካባቢ አድራሻዎች</translation>
     </message>
     <message>
-        <source>Network addresses that your Bitcoin node is currently using to communicate with other nodes.</source>
-        <translation type="unfinished">የእርስዎ Bitcoin ኖድ ከሌሎች ኖዶች ጋር ለመገናኘት በአሁኑ ጊዜ እየተጠቀመበት ያለው የአውታረ መረብ አድራሻ።</translation>
+        <source>Network addresses that your DL0G node is currently using to communicate with other nodes.</source>
+        <translation type="unfinished">የእርስዎ DL0G ኖድ ከሌሎች ኖዶች ጋር ለመገናኘት በአሁኑ ጊዜ እየተጠቀመበት ያለው የአውታረ መረብ አድራሻ።</translation>
     </message>
     <message>
         <source>Hide Peers Detail</source>

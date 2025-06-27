@@ -187,8 +187,11 @@ public:
     int32_t nVersion{0};
     uint256 hashMerkleRoot{};
     uint32_t nTime{0};
-    uint32_t nBits{0};
+    uint16_t nBits{0};
     uint32_t nNonce{0};
+    uint16_t pOffset{0};
+    uint256 dlog_answer{};
+    uint256 ECorder{};
 
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
     int32_t nSequenceId{0};
@@ -197,11 +200,14 @@ public:
     unsigned int nTimeMax{0};
 
     explicit CBlockIndex(const CBlockHeader& block)
-        : nVersion{block.nVersion},
+        : nVersion{static_cast<int32_t>(block.nVersion)},
           hashMerkleRoot{block.hashMerkleRoot},
           nTime{block.nTime},
           nBits{block.nBits},
-          nNonce{block.nNonce}
+          nNonce{static_cast<uint32_t>(block.nNonce)},
+          pOffset{block.pOffset},
+          dlog_answer{block.dlog_answer},
+          ECorder{block.ECorder}
     {
     }
 
@@ -237,6 +243,9 @@ public:
         block.nTime = nTime;
         block.nBits = nBits;
         block.nNonce = nNonce;
+        block.pOffset = pOffset;
+        block.dlog_answer = dlog_answer;
+        block.ECorder = ECorder;
         return block;
     }
 
@@ -394,6 +403,9 @@ public:
         READWRITE(obj.nTime);
         READWRITE(obj.nBits);
         READWRITE(obj.nNonce);
+        READWRITE(obj.pOffset);
+        READWRITE(obj.dlog_answer);
+        READWRITE(obj.ECorder);
     }
 
     uint256 ConstructBlockHash() const
@@ -405,6 +417,9 @@ public:
         block.nTime = nTime;
         block.nBits = nBits;
         block.nNonce = nNonce;
+        block.pOffset = pOffset;
+        block.dlog_answer = dlog_answer;
+        block.ECorder = ECorder;
         return block.GetHash();
     }
 

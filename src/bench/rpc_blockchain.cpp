@@ -48,7 +48,7 @@ struct TestBlockAndIndex {
 static void BlockToJsonVerbose(benchmark::Bench& bench)
 {
     TestBlockAndIndex data;
-    const uint256 pow_limit{data.testing_setup->m_node.chainman->GetParams().GetConsensus().powLimit};
+    const uint16_t pow_limit{data.testing_setup->m_node.chainman->GetParams().GetConsensus().powLimit};
     bench.run([&] {
         auto univalue = blockToJSON(data.testing_setup->m_node.chainman->m_blockman, data.block, data.blockindex, data.blockindex, TxVerbosity::SHOW_DETAILS_AND_PREVOUT, pow_limit);
         ankerl::nanobench::doNotOptimizeAway(univalue);
@@ -60,7 +60,7 @@ BENCHMARK(BlockToJsonVerbose, benchmark::PriorityLevel::HIGH);
 static void BlockToJsonVerboseWrite(benchmark::Bench& bench)
 {
     TestBlockAndIndex data;
-    const uint256 pow_limit{data.testing_setup->m_node.chainman->GetParams().GetConsensus().powLimit};
+    const uint16_t pow_limit{data.testing_setup->m_node.chainman->GetParams().GetConsensus().powLimit};
     auto univalue = blockToJSON(data.testing_setup->m_node.chainman->m_blockman, data.block, data.blockindex, data.blockindex, TxVerbosity::SHOW_DETAILS_AND_PREVOUT, pow_limit);
     bench.run([&] {
         auto str = univalue.write();

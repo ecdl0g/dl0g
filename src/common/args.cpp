@@ -36,7 +36,7 @@
 #include <utility>
 #include <variant>
 
-const char * const BITCOIN_CONF_FILENAME = "bitcoin.conf";
+const char * const BITCOIN_CONF_FILENAME = "dlog.conf";
 const char * const BITCOIN_SETTINGS_FILENAME = "settings.json";
 
 ArgsManager gArgs;
@@ -726,7 +726,7 @@ fs::path GetDefaultDataDir()
     //   old: C:\Users\Username\AppData\Roaming\Bitcoin
     //   new: C:\Users\Username\AppData\Local\Bitcoin
     // macOS: ~/Library/Application Support/Bitcoin
-    // Unix-like: ~/.bitcoin
+    // Unix-like: ~/.dlog
 #ifdef WIN32
     // Windows
     // Check for existence of datadir in old location and keep it there
@@ -747,7 +747,7 @@ fs::path GetDefaultDataDir()
     return pathRet / "Library/Application Support/Bitcoin";
 #else
     // Unix-like
-    return pathRet / ".bitcoin";
+    return pathRet / ".dlog";
 #endif
 #endif
 }

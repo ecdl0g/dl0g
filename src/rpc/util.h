@@ -523,6 +523,6 @@ std::vector<RPCResult> ScriptPubKeyDoc();
  *
  * @return  the target
  */
-uint256 GetTarget(const CBlockIndex& blockindex, const uint256 pow_limit);
+uint16_t GetTarget(const CBlockIndex& blockindex, const uint16_t pow_limit);
 
 #endif // BITCOIN_RPC_UTIL_H

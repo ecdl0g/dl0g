@@ -1,4 +1,4 @@
-# Copyright (c) 2024-present The Bitcoin Core developers
+# Copyright (c) 2024-present The DL0G Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/license/mit/.
 
@@ -22,6 +22,7 @@ target_link_libraries(test_bitcoin-qt
   Boost::headers
   Qt6::Test
 )
+set_target_properties(test_bitcoin-qt PROPERTIES OUTPUT_NAME test_dlog-qt)
 
 import_plugins(test_bitcoin-qt)
 

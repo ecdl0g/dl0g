@@ -15,11 +15,13 @@ The following command, for example, creates a descriptor wallet. More informatio
 $ bitcoin-cli createwallet "wallet-01"
 ```
 
+`bitcoin rpc` can also be substituted for `bitcoin-cli`.
+
 By default, wallets are created in the `wallets` folder of the data directory, which varies by operating system, as shown below. The user can change the default by using the `-datadir` or `-walletdir` initialization parameters.
 
 | Operating System | Default wallet directory                                    |
 | -----------------|:------------------------------------------------------------|
-| Linux            | `/home/<user>/.bitcoin/wallets`                             |
+| Linux            | `/home/<user>/.dlog/wallets`                             |
 | Windows          | `C:\Users\<user>\AppData\Local\Bitcoin\wallets`             |
 | macOS            | `/Users/<user>/Library/Application Support/Bitcoin/wallets` |
 

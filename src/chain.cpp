@@ -130,17 +130,32 @@ void CBlockIndex::BuildSkip()
 
 arith_uint256 GetBlockProof(const CBlockIndex& block)
 {
-    arith_uint256 bnTarget;
-    bool fNegative;
-    bool fOverflow;
-    bnTarget.SetCompact(block.nBits, &fNegative, &fOverflow);
-    if (fNegative || fOverflow || bnTarget == 0)
-        return 0;
-    // We need to compute 2**256 / (bnTarget+1), but we can't represent 2**256
-    // as it's too large for an arith_uint256. However, as 2**256 is at least as large
-    // as bnTarget+1, it is equal to ((2**256 - bnTarget - 1) / (bnTarget+1)) + 1,
-    // or ~bnTarget / (bnTarget+1) + 1.
-    return (~bnTarget / (bnTarget + 1)) + 1;
+
+    // Best method for solving dlog over prime field 
+    // is big-O of sqrt(p).
+    uint64_t nBits = block.nBits;
+
+    //Compute exponent values
+    const uint64_t root  = nBits >> 1 ;
+    const uint64_t half = ( nBits&1 ) ? 5 : 0;
+
+    //Initialize
+    arith_uint256 t1(1);
+    arith_uint256 t2(half);
+    
+    //Compute work: roughly its going to be about  2^( sqrt(p) )
+    //              where p is the size of base field of the EC.
+    // 
+    //  Since the variance here is finding an EC with prime point count,
+    //  base point and target point chosen at random by gHash on the
+    //  EC curve, which pales in comparison for large p in terms of algorithms big-O,
+    //  this is pretty close to what the real work will be --- asymptotically speaking.
+    arith_uint256 work = ( t1 << root );
+    if( nBits&1 ){ 
+        work += ( t2 << ( ( nBits >> 1 ) - 4 )  ); // The 4 is because 5 is a nibble
+    } 
+
+    return work;
 }
 
 int64_t GetBlockProofEquivalentTime(const CBlockIndex& to, const CBlockIndex& from, const CBlockIndex& tip, const Consensus::Params& params)

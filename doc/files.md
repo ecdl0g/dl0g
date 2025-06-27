@@ -26,7 +26,7 @@ The data directory is the default location where the Bitcoin Core files are stor
 
 Platform | Data directory path
 ---------|--------------------
-Linux    | `$HOME/.bitcoin/`
+Linux    | `$HOME/.dlog/`
 macOS    | `$HOME/Library/Application Support/Bitcoin/`
 Windows  | `%LOCALAPPDATA%\Bitcoin\` <sup>[\[1\]](#note1)</sup>
 
@@ -98,7 +98,7 @@ Subdirectory | File                 | Description
 
 ## GUI settings
 
-`bitcoin-qt` uses [`QSettings`](https://doc.qt.io/qt-5/qsettings.html) class; this implies platform-specific [locations where application settings are stored](https://doc.qt.io/qt-5/qsettings.html#locations-where-application-settings-are-stored).
+`bitcoin-qt` uses [`QSettings`](https://doc.qt.io/qt-6/qsettings.html) class; this implies platform-specific [locations where application settings are stored](https://doc.qt.io/qt-6/qsettings.html#locations-where-application-settings-are-stored).
 
 ## Legacy subdirectories and files
 

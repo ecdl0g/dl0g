@@ -13,12 +13,19 @@
 
 #include <algorithm>
 #include <array>
+#include <assert.h>
 #include <cassert>
 #include <cstdint>
 #include <cstring>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <stdint.h>
+#include <vector>
+#include <sstream>
+#include <iomanip>
+#include <iostream>
+
 
 /** Template base class for fixed-sized opaque blobs. */
 template<unsigned int BITS>
@@ -69,11 +76,11 @@ public:
 
     /** @name Hex representation
      *
-     * The hex representation used by GetHex(), ToString(), and FromHex()
-     * is unusual, since it shows bytes of the base_blob in reverse order.
-     * For example, a 4-byte blob {0x12, 0x34, 0x56, 0x78} is represented
-     * as "78563412" instead of the more typical "12345678" representation
-     * that would be shown in a hex editor or used by typical
+     * The hex representation used by GetHex(), ToString(), FromHex() and
+     * SetHexDeprecated() is unusual, since it shows bytes of the base_blob in
+     * reverse order. For example, a 4-byte blob {0x12, 0x34, 0x56, 0x78} is
+     * represented as "78563412" instead of the more typical "12345678"
+     * representation that would be shown in a hex editor or used by typical
      * byte-array / hex conversion functions like python's bytes.hex() and
      * bytes.fromhex().
      *
@@ -92,6 +99,20 @@ public:
      *
      * @{*/
     std::string GetHex() const;
+    /** Unlike FromHex this accepts any invalid input, thus it is fragile and deprecated!
+     *
+     * - Hex numbers that don't specify enough bytes to fill the internal array
+     *   will be treated as setting the beginning of it, which corresponds to
+     *   the least significant bytes when converted to base_uint.
+     *
+     * - Hex numbers specifying too many bytes will have the numerically most
+     *   significant bytes (the beginning of the string) narrowed away.
+     *
+     * - An odd count of hex digits will result in the high bits of the leftmost
+     *   byte being zero.
+     *   "0x123" => {0x23, 0x1, 0x0, ..., 0x0}
+     */
+    void SetHexDeprecated(std::string_view str);
     std::string ToString() const;
     /**@}*/
 
@@ -144,16 +165,7 @@ std::optional<uintN_t> FromHex(std::string_view str)
 {
     if (uintN_t::size() * 2 != str.size() || !IsHex(str)) return std::nullopt;
     uintN_t rv;
-    unsigned char* p1 = rv.begin();
-    unsigned char* pend = rv.end();
-    size_t digits = str.size();
-    while (digits > 0 && p1 < pend) {
-        *p1 = ::HexDigit(str[--digits]);
-        if (digits > 0) {
-            *p1 |= ((unsigned char)::HexDigit(str[--digits]) << 4);
-            p1++;
-        }
-    }
+    rv.SetHexDeprecated(str);
     return rv;
 }
 /**
@@ -204,5 +216,231 @@ public:
     static const uint256 ZERO;
     static const uint256 ONE;
 };
+
+/** 1024-bit opaque blob.
+ */
+class uint1280 {
+    private:
+        //Internal data chosen as 64-bits to align with GMP limbs as 64 bits.
+        const int32_t LIMBS = 20;  //1280-bits
+
+
+    public:
+
+    uint64_t _data[20] = {0};
+
+    uint1280() = default;
+    uint1280(const uint1280& other)
+    {
+        memcpy(_data, other._data, sizeof(_data));
+    }
+
+    //In place shift operator.
+    uint1280 operator<<(const uint32_t bitshift )
+    {
+        assert(bitshift < static_cast<uint32_t>(LIMBS * 64));
+        uint32_t qwordShift = bitshift >> 6;
+        uint32_t bShift     = bitshift & 0x3f;
+        int32_t topLimb     = LIMBS - 1 - qwordShift ;
+
+        //Shift final values into place
+        for( int32_t jj = topLimb; jj > 0 ; jj--){
+
+            uint64_t current_limb = _data[ jj     ] << bShift;
+            uint64_t prev_limb    = (bShift==0) ? 0 : _data[ jj - 1 ] >> (64 - bShift);
+            _data[ qwordShift + jj] = current_limb | prev_limb;
+        }
+
+        //Do last limb
+        _data[ qwordShift ] =  _data[0] << bShift;
+
+        //Set words to zero
+        for( uint32_t jj=0; jj < qwordShift; jj++)  _data[jj] = 0;
+
+        return *this;
+    }
+
+    // copy assignment
+    uint1280& operator=(const uint1280& other)
+    {
+        // Guard self assignment
+        if (this == &other)
+            return *this;
+
+        //Copy the data
+        memcpy( _data, other.u8_begin_write(), sizeof(_data) );
+        return *this;
+    }
+
+    //Get pointer to the beginning of the data
+    const uint64_t* u64_begin() const
+    {
+        return _data;
+    }
+
+    //Get pointer to the end of the data
+    const uint64_t* u64_end() const
+    {
+        return &_data[LIMBS-1 ] ;
+    }
+
+    //Get pointer to the beginning of the data
+    const uint8_t* u8_begin() const
+    {
+        return (uint8_t*)_data;
+    }
+
+    //Get pointer to the beginning of the data
+    uint8_t* u8_begin_write() const
+    {
+        return (uint8_t*)_data;
+    }
+
+    //Get pointer to the end of the data
+    const uint8_t* u8_end() const
+    {
+        return &((uint8_t*)_data)[ sizeof(_data) - 1 ] ;
+    }
+
+    void SetNull()
+    {
+        memset(_data, 0, sizeof(_data) );
+    }
+
+    std::string ToString() const
+    {
+        std::stringstream ss;
+        ss << std::hex << std::setfill('0');
+        for (int i = 0; i < LIMBS; ++i)
+        {
+            ss << std::setw(16) << _data[LIMBS - i - 1];
+        }
+        return ss.str();
+    }
+
+    // Returns the A value in y^2 = x^3 + Ax + B Mod P
+    // Stored as the first 256 bits in an uint1280 type.
+    std::string GetA() const 
+    {
+        std::stringstream ss;
+        ss << std::hex << std::setfill('0');
+        for (int i = 0; i < 4; ++i)
+        {
+            ss << std::setw(16) << _data[LIMBS - i - 1];
+        }
+        return ss.str();
+    }
+
+    // Returns the B value in y^2 = x^3 + Ax + B Mod P
+    // Stored as the second block of 256 bits in 
+    // an uint1280 type.
+    std::string GetB() const 
+    {
+        std::stringstream ss;
+        ss << std::hex << std::setfill('0');
+        for (int i = 4; i < 8; ++i)
+        {
+            ss << std::setw(16) << _data[LIMBS - i - 1];
+        }
+        return ss.str();
+    }
+
+    // Returns the P value in y^2 = x^3 + Ax + B Mod P
+    // Stored as the third block of 256 bits in 
+    // an uint1280 type.
+    std::string GetP() const 
+    {
+        std::stringstream ss;
+        ss << std::hex << std::setfill('0');
+        for (int i = 8; i < 12; ++i)
+        {
+            ss << std::setw(16) << _data[LIMBS - i - 1];
+        }
+        return ss.str();
+    }
+
+    // Returns the x0 value of random point on 
+    // y^2 = x^3 + Ax + B Mod P
+    // Stored as the fourtth block of 256 bits in 
+    // an uint1280 type.
+    std::string GetX() const 
+    {
+        std::stringstream ss;
+        ss << std::hex << std::setfill('0');
+        for (int i = 12; i < 16; ++i)
+        {
+            ss << std::setw(16) << _data[LIMBS - i - 1];
+        }
+        return ss.str();
+    }
+
+    // Returns the x1 value of random point on 
+    // y^2 = x^3 + Ax + B Mod P
+    // Stored as the fourtth block of 256 bits in 
+    // an uint1280 type.
+    std::string GetXG() const 
+    {
+        std::stringstream ss;
+        ss << std::hex << std::setfill('0');
+        for (int i = 16; i < 20; ++i)
+        {
+            ss << std::setw(16) << _data[LIMBS - i - 1];
+        }
+        return ss.str();
+    }
+
+    void SetHex(const char* psz);
+    void SetHex(const std::string& str);
+
+    template<typename Stream>
+    void Serialize(Stream& s) const
+    {
+        s.write((char*)_data, sizeof(_data));
+    }
+
+    template<typename Stream>
+    void Unserialize(Stream& s)
+    {
+        s.read((char*)_data, sizeof(_data));
+    }
+
+    uint64_t bits() const
+    {
+            const int64_t WIDTH = 1024/64;
+        for (int pos = WIDTH - 1; pos >= 0; pos--) {
+            if (_data[pos]) {
+                for (int nbits = 63; nbits >= 0; nbits--) {
+                    if (_data[pos] & 1ULL << nbits)
+                        return 64 * pos + nbits + 1 ;
+                }
+                return 64 * pos ;
+            }
+        }
+        return 0;
+    }
+};
+
+/* uint1280 from const char *.
+ * This is a separate function because the constructor uint1280(const char*) can result
+ * in dangerously catching uint1280(0).
+ */
+inline uint1280 uint1280S(const char *str)
+{
+    uint1280 rv;
+    rv.SetHex(str);
+    return rv;
+}
+/* uint1280S from std::string.
+ * This is a separate function because the constructor uint256(const std::string &str) can result
+ * in dangerously catching uint1280(0) via std::string(const char*).
+ */
+inline uint1280 uint1280S(const std::string& str)
+{
+    uint1280 rv;
+    rv.SetHex(str);
+    return rv;
+}
+
+
 
 #endif // BITCOIN_UINT256_H

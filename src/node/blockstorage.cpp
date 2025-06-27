@@ -6,6 +6,7 @@
 
 #include <arith_uint256.h>
 #include <chain.h>
+#include <common/args.h>
 #include <consensus/params.h>
 #include <consensus/validation.h>
 #include <dbwrapper.h>
@@ -38,6 +39,7 @@
 
 #include <cstddef>
 #include <map>
+#include <optional>
 #include <unordered_map>
 
 namespace kernel {
@@ -109,6 +111,13 @@ bool BlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, s
     std::unique_ptr<CDBIterator> pcursor(NewIterator());
     pcursor->Seek(std::make_pair(DB_BLOCK_INDEX, uint256()));
 
+    // The denominator rate at which we will check PoW when re-constructing
+    // m_block_index from disk. Higher values reduce the amount of checks
+    // performed, i.e. `100` means that 1 in 100 headers will be randomly
+    // selected for a PoW check, and `1` means every header will be checked.
+    int powcheck_rate = gArgs.GetIntArg("-idxpowcheckrate", nDefaultCheckPoWRate);
+    static FastRandomContext rngPoWCheck;
+
     // Load m_block_index
     while (pcursor->Valid()) {
         if (interrupt) return false;
@@ -128,10 +137,16 @@ bool BlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, s
                 pindexNew->nTime          = diskindex.nTime;
                 pindexNew->nBits          = diskindex.nBits;
                 pindexNew->nNonce         = diskindex.nNonce;
+                pindexNew->pOffset        = diskindex.pOffset;
+                pindexNew->dlog_answer    = diskindex.dlog_answer;
+                pindexNew->ECorder        = diskindex.ECorder;
                 pindexNew->nStatus        = diskindex.nStatus;
                 pindexNew->nTx            = diskindex.nTx;
-
-                if (!CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, consensusParams)) {
+               
+                // Randomly check PoW. This does not affect integrity, as every
+                // record is integrity-checked by leveldb; see also the
+                // CDBWrapper::CDBWrapper implementation
+                if (rngPoWCheck.randrange(powcheck_rate) == 0 && !CheckProofOfWork(pindexNew->GetBlockHeader(), consensusParams)) { 
                     LogError("%s: CheckProofOfWork failed: %s\n", __func__, pindexNew->ToString());
                     return false;
                 }
@@ -989,12 +1004,12 @@ bool BlockManager::WriteBlockUndo(const CBlockUndo& blockundo, BlockValidationSt
     return true;
 }
 
-bool BlockManager::ReadBlock(CBlock& block, const FlatFilePos& pos) const
+bool BlockManager::ReadBlock(CBlock& block, const FlatFilePos& pos, const std::optional<uint256>& expected_hash) const
 {
     block.SetNull();
 
     // Open history file to read
-    std::vector<uint8_t> block_data;
+    std::vector<std::byte> block_data;
     if (!ReadRawBlock(block_data, pos)) {
         return false;
     }
@@ -1007,8 +1022,10 @@ bool BlockManager::ReadBlock(CBlock& block, const FlatFilePos& pos) const
         return false;
     }
 
+    const auto block_hash{block.GetHash()};
+
     // Check the header
-    if (!CheckProofOfWork(block.GetHash(), block.nBits, GetConsensus())) {
+    if (!CheckProofOfWork( block.GetBlockHeader(), GetConsensus())) {
         LogError("Errors in block header at %s while reading block", pos.ToString());
         return false;
     }
@@ -1019,24 +1036,22 @@ bool BlockManager::ReadBlock(CBlock& block, const FlatFilePos& pos) const
         return false;
     }
 
+    if (expected_hash && block_hash != *expected_hash) {
+        LogError("GetHash() doesn't match index at %s while reading block (%s != %s)",
+                 pos.ToString(), block_hash.ToString(), expected_hash->ToString());
+        return false;
+    }
+
     return true;
 }
 
 bool BlockManager::ReadBlock(CBlock& block, const CBlockIndex& index) const
 {
     const FlatFilePos block_pos{WITH_LOCK(cs_main, return index.GetBlockPos())};
-
-    if (!ReadBlock(block, block_pos)) {
-        return false;
-    }
-    if (block.GetHash() != index.GetBlockHash()) {
-        LogError("GetHash() doesn't match index for %s at %s while reading block", index.ToString(), block_pos.ToString());
-        return false;
-    }
-    return true;
+    return ReadBlock(block, block_pos, index.GetBlockHash());
 }
 
-bool BlockManager::ReadRawBlock(std::vector<uint8_t>& block, const FlatFilePos& pos) const
+bool BlockManager::ReadRawBlock(std::vector<std::byte>& block, const FlatFilePos& pos) const
 {
     if (pos.nPos < STORAGE_HEADER_BYTES) {
         // If nPos is less than STORAGE_HEADER_BYTES, we can't read the header that precedes the block data
@@ -1070,7 +1085,7 @@ bool BlockManager::ReadRawBlock(std::vector<uint8_t>& block, const FlatFilePos& 
         }
 
         block.resize(blk_size); // Zeroing of memory is intentional here
-        filein.read(MakeWritableByteSpan(block));
+        filein.read(block);
     } catch (const std::exception& e) {
         LogError("Read from block file failed: %s for %s while reading raw block", e.what(), pos.ToString());
         return false;

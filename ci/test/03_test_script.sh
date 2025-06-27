@@ -87,7 +87,7 @@ fi
 if [ "$CI_OS_NAME" == "macos" ]; then
   echo > "${HOME}/Library/Application Support/Bitcoin"
 else
-  echo > "${HOME}/.bitcoin"
+  echo > "${HOME}/.dlog"
 fi
 
 if [ -z "$NO_DEPENDS" ]; then
